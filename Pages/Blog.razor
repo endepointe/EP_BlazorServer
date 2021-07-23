@@ -1,0 +1,16 @@
+@page "/blog"
+@using System.Text.Json
+@using System.Text.Json.Serialization;
+@inject IHttpClientFactory ClientFactory
+@inject HttpClient Http
+
+<h1>Call web API from a Blazor Server Razor component</h1>
+<button onclick="PrintResponse")>get some data</button>
+
+@code {
+    private async Task PrintResponse()
+    {
+        var response = await Http.GetStringAsync("http://localhost:5551/blogs/all");
+        Console.WriteLine(response);
+    }
+}
