@@ -2,15 +2,95 @@
 @using System.Text.Json
 @using System.Text.Json.Serialization;
 @inject IHttpClientFactory ClientFactory
-@inject HttpClient Http
 
 <h1>Call web API from a Blazor Server Razor component</h1>
-<button onclick="PrintResponse")>get some data</button>
+
+@if (getBranchesError)
+{
+    <p>Unable to get branches from GitHub. Please try again later.</p>
+}
+else
+{
+    <ul>
+        @foreach (var branch in branches)
+        {
+            <li>@branch.Name</li>
+        }
+    </ul>
+}
 
 @code {
-    private async Task PrintResponse()
+    private IEnumerable<GitHubBranch> branches = Array.Empty<GitHubBranch>();
+    private List<BlogPost> blog = new List<BlogPost>();
+    private string test;
+    private bool getBranchesError;
+    private bool shouldRender;
+
+    protected override bool ShouldRender() => shouldRender;
+
+    /*
+    protected override async Task OnInitializedAsync()
     {
-        var response = await Http.GetStringAsync("http://localhost:5551/blogs/all");
-        Console.WriteLine(response);
+        var request = new HttpRequestMessage(HttpMethod.Get,
+            "https://api.github.com/repos/dotnet/AspNetCore.Docs/branches");
+        request.Headers.Add("Accept", "application/vnd.github.v3+json");
+        request.Headers.Add("User-Agent", "HttpClientFactory-Sample");
+
+        var client = ClientFactory.CreateClient();
+
+        var response = await client.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            using var responseStream = await response.Content.ReadAsStreamAsync();
+            branches = await JsonSerializer.DeserializeAsync
+                <IEnumerable<GitHubBranch>>(responseStream);
+        }
+        else
+        {
+            getBranchesError = true;
+        }
+
+        shouldRender = true;
+    }
+    */
+
+    protected override async Task OnInitializedAsync()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get,
+            "http://localhost:5551/blogs/all");
+        request.Headers.Add("Accept", "application/json");
+
+        var client = ClientFactory.CreateClient();
+
+        var response = await client.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            using var responseStream = await response.Content.ReadAsStreamAsync();
+            test = await JsonSerializer.DeserializeAsync<string>(responseStream);
+            Console.WriteLine(test);
+        }
+        else
+        {
+            getBranchesError = true;
+        }
+
+        shouldRender = true;
+    }
+  
+    public class GitHubBranch
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+    }
+    
+    public class BlogPost
+    {
+        public int id {get; set;}
+        public string title {get;set;}
+        public string posted{get;set;}
+        public string modified{get;set;}
+        public string content{get;set;}
     }
 }
