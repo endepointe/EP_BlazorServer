@@ -21,14 +21,13 @@ else
 
 @code {
     private IEnumerable<GitHubBranch> branches = Array.Empty<GitHubBranch>();
-    private List<BlogPost> blog = new List<BlogPost>();
+    private IEnumerable<BlogPost> blog = Array.Empty<BlogPost>();
     private string test;
     private bool getBranchesError;
     private bool shouldRender;
 
     protected override bool ShouldRender() => shouldRender;
 
-    /*
     protected override async Task OnInitializedAsync()
     {
         var request = new HttpRequestMessage(HttpMethod.Get,
@@ -53,31 +52,6 @@ else
 
         shouldRender = true;
     }
-    */
-
-    protected override async Task OnInitializedAsync()
-    {
-        var request = new HttpRequestMessage(HttpMethod.Get,
-            "http://localhost:5551/blogs/all");
-        request.Headers.Add("Accept", "application/json");
-
-        var client = ClientFactory.CreateClient();
-
-        var response = await client.SendAsync(request);
-
-        if (response.IsSuccessStatusCode)
-        {
-            using var responseStream = await response.Content.ReadAsStreamAsync();
-            test = await JsonSerializer.DeserializeAsync<string>(responseStream);
-            Console.WriteLine(test);
-        }
-        else
-        {
-            getBranchesError = true;
-        }
-
-        shouldRender = true;
-    }
   
     public class GitHubBranch
     {
@@ -85,12 +59,12 @@ else
         public string Name { get; set; }
     }
     
-    public class BlogPost
+    public struct BlogPost
     {
-        public int id {get; set;}
-        public string title {get;set;}
-        public string posted{get;set;}
-        public string modified{get;set;}
-        public string content{get;set;}
+        public int id;
+        public string title;
+        public string posted;
+        public string modified;
+        public string content;
     }
 }
